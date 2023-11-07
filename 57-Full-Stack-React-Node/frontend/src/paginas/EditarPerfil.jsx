@@ -11,6 +11,7 @@ const EditarPerfil = () => {
     const [alerta, setAlerta] = useState({})
 
     useEffect( () => {
+        console.log(auth);
         setPerfil(auth)
     }, [auth])
 
