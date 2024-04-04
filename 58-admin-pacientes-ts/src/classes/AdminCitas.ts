@@ -1,99 +1,39 @@
-// Selectores
-const pacienteInput = document.querySelector('#paciente')
-const propietarioInput = document.querySelector('#propietario')
-const emailInput = document.querySelector('#email')
-const fechaInput = document.querySelector('#fecha')
-const sintomasInput = document.querySelector('#sintomas')
+import { contenedorCitas } from "../selectores"
+import { cargarEdicion } from "../funciones"
+import type { Cita } from '../types'
 
-const formulario = document.querySelector('#formulario-cita')
-const formularioInput = document.querySelector('#formulario-cita input[type="submit"]')
-const contenedorCitas = document.querySelector('#citas')
+export default class AdminCitas {
 
-// Eventos
-pacienteInput.addEventListener('change', datosCita)
-propietarioInput.addEventListener('change', datosCita)
-emailInput.addEventListener('change', datosCita)
-fechaInput.addEventListener('change', datosCita)
-sintomasInput.addEventListener('change', datosCita)
+    citas: Cita[]
 
-formulario.addEventListener('submit', submitCita)
-
-let editando = false
-
-// Objeto de Cita
-const citaObj = {
-    id: generarId(),
-    paciente: '',
-    propietario: '',
-    email: '',
-    fecha: '',
-    sintomas: ''
-}
-
-
-class Notificacion {
-
-    constructor({texto, tipo}) {
-        this.texto = texto
-        this.tipo = tipo
-        this.mostrar()
-    }
-
-    mostrar() {
-        // Crear la notificacion
-        const alerta = document.createElement('DIV')
-        alerta.classList.add('text-center', 'w-full', 'p-3', 'text-white', 'my-5', 'alert', 'uppercase', 'font-bold', 'text-sm')
-
-        // Eliminar alertas duplicadas
-        const alertaPrevia = document.querySelector('.alert')
-        alertaPrevia?.remove()
-
-        // Si es de tipo error, agrega una clase
-        this.tipo === 'error' ? alerta.classList.add('bg-red-500') : alerta.classList.add('bg-green-500')
-
-        // Mensaje de error
-        alerta.textContent = this.texto
-
-        // Insertar en el DOM
-        formulario.parentElement.insertBefore(alerta, formulario)
-
-        // Quitar después de 5 segundos
-        setTimeout(() => {
-            alerta.remove()
-        }, 3000);
-    }
-}
-
-class AdminCitas {
     constructor() {
         this.citas = []
     }
 
-    agregar(cita) {
+    agregar(cita : Cita) {
         this.citas = [...this.citas, cita]
         this.mostrar()
     }
 
-    editar(citaActualizada) {
+    editar(citaActualizada : Cita) {
         this.citas = this.citas.map( cita => cita.id === citaActualizada.id ? citaActualizada : cita )
         this.mostrar()
     }
 
-    eliminar(id) {
+    eliminar(id : Cita['id']) {
         this.citas = this.citas.filter( cita =>  cita.id !== id)
         this.mostrar()
     }
 
-
     mostrar() {
 
         // Limpiar el HTML
-        while(contenedorCitas.firstChild) {
+        while(contenedorCitas?.firstChild) {
             contenedorCitas.removeChild(contenedorCitas.firstChild)
         }
 
         // Si hay citas
-        if(this.citas.length === 0) {
+        if(this.citas.length === 0 && contenedorCitas ) {
             contenedorCitas.innerHTML = '<p class="text-xl mt-5 mb-10 text-center">No Hay Pacientes</p>'
             return
         }
@@ -148,80 +88,7 @@ class AdminCitas {
             divCita.appendChild(fecha);
             divCita.appendChild(sintomas);
             divCita.appendChild(contenedorBotones)
-            contenedorCitas.appendChild(divCita);
+            contenedorCitas?.appendChild(divCita);
         });    
     }
-}
-
-function datosCita(e) {
-    citaObj[e.target.name] = e.target.value
-}
-
-const citas = new AdminCitas()
-
-function submitCita(e) {
-    e.preventDefault();
-    
-    if( Object.values(citaObj).some(valor => valor.trim() === '')) {
-        new Notificacion({
-            texto: 'Todos los campos son obligatorios',
-            tipo: 'error'
-        })
-        return
-    }
-
-    if(editando) {
-        citas.editar({...citaObj})
-        new Notificacion({
-            texto: 'Guardado Correctamente',
-            tipo: 'exito'
-        })
-    } else {
-        citas.agregar({...citaObj})
-        new Notificacion({
-            texto: 'Paciente Registrado',
-            tipo: 'exito'
-        })
-    }    
-    formulario.reset()
-    reiniciarObjetoCita()
-    formularioInput.value = 'Registrar Paciente'
-    editando = false
-}
-
-function reiniciarObjetoCita() {
-    // Reiniciar el objeto
-    // citaObj.id = generarId()
-    // citaObj.paciente = '';
-    // citaObj.propietario = '';
-    // citaObj.email = '';
-    // citaObj.fecha = '';
-    // citaObj.sintomas = '';
-
-    Object.assign(citaObj, {
-        id: generarId(),
-        paciente: '',
-        propietario: '',
-        email: '',
-        fecha: '',
-        sintomas: ''
-    })
-}
-
-function generarId() {
-    return Math.random().toString(36).substring(2) + Date.now()
-}
-
-function cargarEdicion(cita) {
-    Object.assign(citaObj, cita)
-
-    pacienteInput.value = cita.paciente
-    propietarioInput.value = cita.propietario
-    emailInput.value = cita.email
-    fechaInput.value = cita.fecha
-    sintomasInput.value = cita.sintomas
-
-    editando = true
-
-    formularioInput.value = 'Guardar Cambios'
 }
